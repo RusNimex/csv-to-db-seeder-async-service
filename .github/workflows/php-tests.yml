@@ -1,0 +1,3 @@
+- name: Run api test
+  working-directory: ./services/api
+  run: composer test
