@@ -1,6 +1,7 @@
 {
     "name": "rus/csv-file-import",
     "description": "CSV file Loader by REST API",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "App\\": "src/"

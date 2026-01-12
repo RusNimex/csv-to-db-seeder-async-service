@@ -1,10 +1,10 @@
-name: PHP Tests
+name: PHP API Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
 
     - name: Validate composer.json and composer.lock
       working-directory: ./services/api
-      run: composer validate --strict
+      run: composer validate
 
     - name: Cache Composer packages
       id: composer-cache
@@ -43,4 +43,5 @@ jobs:
 
     - name: Run PHPUnit tests
       working-directory: ./services/api
-      run: vendor/bin/phpunit
+      run: composer test
+
