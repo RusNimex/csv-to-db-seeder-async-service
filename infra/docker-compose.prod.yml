@@ -1,0 +1,47 @@
+# Production override для docker-compose.yml
+# Использование: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  api:
+    restart: always
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  worker:
+    restart: always
+    deploy:
+      replicas: 5
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  mysql:
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password --max_connections=200
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  rabbitmq:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+

@@ -1,0 +1,34 @@
+# Composer (PHP)
+/vendor/
+
+# Environment variables
+.env
+
+# IDE
+/.idea/
+/.vscode/
+/.github/
+.DS_Store
+.codeassistant/
+.sourcecraft/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# PHP
+*.php~
+*.php.bak
+*.php.old
+*.php.save
+
+# Storage (загруженные файлы)
+/storage/
+
+# Docker
+.dockerignore
+

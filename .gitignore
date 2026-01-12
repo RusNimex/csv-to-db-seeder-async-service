@@ -1,0 +1,124 @@
+# Composer (PHP)
+/vendor/
+/composer.phar
+composer.lock
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Binaries
+/bin/
+/dist/
+/build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+.nvim/
+.DS_Store
+.codeassistant/
+.sourcecraft/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Cache
+cache/
+tmp/
+temp/
+/tmp/
+
+# PHP
+*.php~
+*.php.bak
+*.php.old
+*.php.save
+
+# Storage (загруженные файлы)
+/storage/
+/storage/app/
+/storage/csv/
+/storage/uploads/
+!storage/.gitkeep
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+/database/*.sql
+!/database/migrations/
+/infra/mysql/data/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Build artifacts
+/build/
+/dist/
+*.tar.gz
+*.zip
+
+# Coverage reports
+/coverage/
+*.coverage
+htmlcov/
+.coverage
+
+# Testing
+.pytest_cache/
+.phpunit.result.cache
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# RabbitMQ data (если локально)
+rabbitmq_data/
+
+# Node modules (если будет фронтенд)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Application specific
+/config/db.php
+!/config/db.example.php
+

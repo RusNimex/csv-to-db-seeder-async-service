@@ -1,0 +1,113 @@
+services:
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: csv-import-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_LOOPBACK_USERS: ""
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    networks:
+      - csv-import-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: csv-import-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-csv}
+      MYSQL_USER: ${MYSQL_USER:-csv_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-csv_pass}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - csv-import-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # PHP API Service
+  api:
+    build:
+      context: ../services/api
+      dockerfile: Dockerfile
+    container_name: csv-import-api
+    ports:
+      - "${API_PORT:-8001}:8001"
+    volumes:
+      - ../services/api:/var/www/html
+      - ../storage:/var/www/html/storage
+      - ./php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:-guest}
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST:-/}
+      - FILES_STORAGE_PATH=/var/www/html/storage/csv
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - csv-import-network
+    restart: unless-stopped
+
+  # Golang Worker Service
+  worker:
+    build:
+      context: ../services/workers
+      dockerfile: Dockerfile
+    deploy:
+      replicas: ${WORKER_REPLICAS:-3}
+    volumes:
+      - ../storage:/app/storage
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE:-csv}
+      - DB_USER=${MYSQL_USER:-csv_user}
+      - DB_PASSWORD=${MYSQL_PASSWORD:-csv_pass}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/${RABBITMQ_VHOST:-/}
+      - STORAGE_PATH=/app/storage
+      - WORKER_QUEUES=${WORKER_QUEUES:-csv_import_high,csv_import_normal,csv_import_large}
+      - WORKER_BATCH_SIZE=${WORKER_BATCH_SIZE:-2000}
+      - WORKER_PREFETCH_COUNT=${WORKER_PREFETCH_COUNT:-1}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - csv-import-network
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
+networks:
+  csv-import-network:
+    driver: bridge
+
