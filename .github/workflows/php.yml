@@ -1,0 +1,47 @@
+name: PHP API Tests
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+        coverage: none
+
+    - name: Validate composer.json and composer.lock
+      working-directory: ./services/api
+      run: composer validate
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: services/api/vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('services/api/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      working-directory: ./services/api
+      run: composer install --prefer-dist --no-progress --no-interaction
+
+    - name: Run PHPUnit tests
+      working-directory: ./services/api
+      run: composer test
+
