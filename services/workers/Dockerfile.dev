@@ -1,0 +1,21 @@
+# Development образ с Go для hot reload
+FROM golang:1.21-alpine
+
+# Устанавливаем зависимости
+RUN apk add --no-cache git ca-certificates
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем go mod файлы
+COPY go.mod ./
+
+# Загружаем зависимости
+RUN go mod download
+
+# Копируем исходный код (будет перезаписан volume в dev)
+COPY *.go ./
+
+# Запускаем через go run для hot reload
+CMD ["go", "run", "."]
+

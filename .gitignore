@@ -59,11 +59,10 @@ temp/
 *.php.save
 
 # Storage (загруженные файлы)
-/storage/
-/storage/app/
-/storage/csv/
-/storage/uploads/
-!storage/.gitkeep
+/storage/*
+!/storage/.gitkeep
+!/storage/csv/
+!/storage/csv/.gitkeep
 
 # Database
 *.sqlite
